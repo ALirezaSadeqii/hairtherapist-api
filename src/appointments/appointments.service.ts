@@ -27,7 +27,8 @@ export interface AvailabilityResponse {
 export interface PublicAppointmentResponse {
   id: string;
   customerName: string;
-  email: string;
+  email?: string | null;
+  phone: string;
   date: string;
   status: string;
   createdAt: Date;
@@ -105,8 +106,8 @@ export class AppointmentsService {
       const created = await this.prisma.appointment.create({
         data: {
           customerName: dto.customerName,
-          email: dto.email,
-          phone: dto.phone ?? null,
+          email: dto.email ?? null,
+          phone: dto.phone,
           date: calendarDate,
           status: 'CONFIRMED',
         },
@@ -118,6 +119,7 @@ export class AppointmentsService {
         id: created.id,
         customerName: created.customerName,
         email: created.email,
+        phone: created.phone ?? dto.phone,
         date: formatCalendarDate(created.date),
         status: created.status,
         createdAt: created.createdAt,

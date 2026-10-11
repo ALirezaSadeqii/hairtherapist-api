@@ -79,6 +79,7 @@ describe('Appointments & Auth API (e2e)', () => {
         .post('/appointments')
         .send({
           customerName: 'Jane Doe',
+          phone: '523 434 1223',
           email: 'jane@example.com',
           date: '2026-02-30',
         })
@@ -90,6 +91,7 @@ describe('Appointments & Auth API (e2e)', () => {
         .post('/appointments')
         .send({
           customerName: 'Jane Doe',
+          phone: '523 434 1223',
           email: 'not-an-email',
           date: '2026-10-15',
         })
@@ -100,6 +102,30 @@ describe('Appointments & Auth API (e2e)', () => {
       await request(app.getHttpServer())
         .post('/appointments')
         .send({
+          phone: '523 434 1223',
+          email: 'jane@example.com',
+          date: '2026-10-15',
+        })
+        .expect(400);
+    });
+
+    it('should reject booking requests with missing phone number', async () => {
+      await request(app.getHttpServer())
+        .post('/appointments')
+        .send({
+          customerName: 'Jane Doe',
+          email: 'jane@example.com',
+          date: '2026-10-15',
+        })
+        .expect(400);
+    });
+
+    it('should reject booking requests with invalid phone format', async () => {
+      await request(app.getHttpServer())
+        .post('/appointments')
+        .send({
+          customerName: 'Jane Doe',
+          phone: '1234567890',
           email: 'jane@example.com',
           date: '2026-10-15',
         })
@@ -111,6 +137,7 @@ describe('Appointments & Auth API (e2e)', () => {
         .post('/appointments')
         .send({
           customerName: 'Jane Doe',
+          phone: '523 434 1223',
           email: 'jane@example.com',
           date: '2026-10-15',
           price: 100, // forbidden property

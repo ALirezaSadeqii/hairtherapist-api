@@ -79,7 +79,7 @@ describe('AppointmentsService', () => {
     const validDto: CreateAppointmentDto = {
       customerName: 'Alice Smith',
       email: 'alice@example.com',
-      phone: '+1234567890',
+      phone: '523 434 1223',
       date: '2026-10-20',
     };
 
@@ -89,7 +89,7 @@ describe('AppointmentsService', () => {
         id: '11111111-1111-1111-1111-111111111111',
         customerName: 'Alice Smith',
         email: 'alice@example.com',
-        phone: '+1234567890',
+        phone: '523 434 1223',
         date: new Date('2026-10-20T00:00:00.000Z'),
         status: 'CONFIRMED',
         createdAt: new Date(),
@@ -102,6 +102,31 @@ describe('AppointmentsService', () => {
       expect(response.date).toBe('2026-10-20');
       expect(response.status).toBe('CONFIRMED');
       expect(response.customerName).toBe('Alice Smith');
+      expect(response.phone).toBe('523 434 1223');
+    });
+
+    it('should successfully create an appointment when email is omitted', async () => {
+      prisma.appointment.findFirst.mockResolvedValue(null);
+      prisma.appointment.create.mockResolvedValue({
+        id: '22222222-2222-2222-2222-222222222222',
+        customerName: 'Bob Brown',
+        email: null,
+        phone: '523 434 1223',
+        date: new Date('2026-10-21T00:00:00.000Z'),
+        status: 'CONFIRMED',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const response = await service.createAppointment({
+        customerName: 'Bob Brown',
+        phone: '523 434 1223',
+        date: '2026-10-21',
+      });
+
+      expect(response.id).toBe('22222222-2222-2222-2222-222222222222');
+      expect(response.email).toBeNull();
+      expect(response.phone).toBe('523 434 1223');
     });
 
     it('should throw ConflictException on duplicate booking for the same date', async () => {

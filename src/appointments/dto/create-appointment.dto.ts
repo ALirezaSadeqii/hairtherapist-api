@@ -23,29 +23,33 @@ export class CreateAppointmentDto {
   )
   customerName!: string;
 
-  @ApiProperty({
-    description: 'Customer contact email address',
+  @ApiPropertyOptional({
+    description: 'Optional customer contact email address',
     example: 'alice@example.com',
   })
-  @IsEmail({}, { message: 'A valid email address is required.' })
-  @IsNotEmpty({ message: 'Email is required.' })
+  @IsOptional()
+  @IsEmail({}, { message: 'A valid email address is required if provided.' })
   @MaxLength(255, { message: 'Email cannot exceed 255 characters.' })
   @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
+    typeof value === 'string' && value.trim().length > 0
+      ? value.trim().toLowerCase()
+      : null,
   )
-  email!: string;
+  email?: string | null;
 
-  @ApiPropertyOptional({
-    description: 'Optional phone number',
-    example: '+1 (555) 123-4567',
+  @ApiProperty({
+    description: 'Mandatory customer phone number (format: 523 434 1223)',
+    example: '523 434 1223',
   })
-  @IsOptional()
-  @IsString({ message: 'Phone must be a string if provided.' })
-  @MaxLength(30, { message: 'Phone cannot exceed 30 characters.' })
+  @IsNotEmpty({ message: 'Phone number is required.' })
+  @IsString({ message: 'Phone number must be a string.' })
+  @Matches(/^\d{3} \d{3} \d{4}$/, {
+    message: 'Phone number must follow the format 523 434 1223.',
+  })
   @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' && value.trim().length > 0 ? value.trim() : null,
+    typeof value === 'string' ? value.trim() : value,
   )
-  phone?: string | null;
+  phone!: string;
 
   @ApiProperty({
     description: 'Appointment calendar date (YYYY-MM-DD)',

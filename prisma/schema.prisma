@@ -26,7 +26,7 @@ model Admin {
 model Appointment {
   id           String            @id @default(uuid()) @db.Uuid
   customerName String
-  email        String
+  email        String?
   phone        String?
   date         DateTime          @db.Date
   status       AppointmentStatus @default(CONFIRMED)
