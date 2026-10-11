@@ -1,0 +1,38 @@
+// Prisma schema for Beauty Salon Appointment Booking System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model Admin {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Appointment {
+  id           String            @id @default(uuid()) @db.Uuid
+  customerName String
+  email        String
+  phone        String?
+  date         DateTime          @db.Date
+  status       AppointmentStatus @default(CONFIRMED)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([date])
+  @@map("appointments")
+}
