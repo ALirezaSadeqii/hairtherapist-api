@@ -32,14 +32,29 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Explicit CORS configuration for the Next.js frontend
-  const allowedOrigins = process.env.FRONTEND_URL
-    ? process.env.FRONTEND_URL.split(',').map((origin) => origin.trim())
-    : ['http://localhost:3000'];
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://hairtherapist.vercel.app',
+    ...(process.env.FRONTEND_URL
+      ? process.env.FRONTEND_URL.split(',').map((o) => o.trim())
+      : []),
+  ];
+
+  // Deduplicate
+  const uniqueOrigins = [...new Set(allowedOrigins)];
+  logger.log(`CORS allowed origins: ${uniqueOrigins.join(', ')}`);
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      if (uniqueOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS: origin '${origin}' not allowed`), false);
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   });
 
