@@ -45,7 +45,7 @@ async function bootstrap() {
   logger.log(`CORS allowed origins: ${uniqueOrigins.join(', ')}`);
 
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (curl, Postman, server-to-server)
       if (!origin) return callback(null, true);
       if (uniqueOrigins.includes(origin)) {
