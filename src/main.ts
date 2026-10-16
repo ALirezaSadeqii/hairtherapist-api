@@ -36,22 +36,26 @@ async function bootstrap() {
     'http://localhost:3000',
     'https://hairtherapist.vercel.app',
     ...(process.env.FRONTEND_URL
-      ? process.env.FRONTEND_URL.split(',').map((o) => o.trim())
+      ? process.env.FRONTEND_URL.split(',').map((o) => o.trim().replace(/\/+$/, ''))
       : []),
   ];
 
   // Deduplicate
-  const uniqueOrigins = [...new Set(allowedOrigins)];
+  const uniqueOrigins = [...new Set(allowedOrigins.filter(Boolean))];
   logger.log(`CORS allowed origins: ${uniqueOrigins.join(', ')}`);
 
   app.enableCors({
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (curl, Postman, server-to-server)
       if (!origin) return callback(null, true);
-      if (uniqueOrigins.includes(origin)) {
+      const cleanOrigin = origin.replace(/\/+$/, '');
+      if (
+        uniqueOrigins.includes(cleanOrigin) ||
+        /^https:\/\/hairtherapist(-[a-z0-9-]+)?\.vercel\.app$/.test(cleanOrigin)
+      ) {
         return callback(null, true);
       }
-      return callback(new Error(`CORS: origin '${origin}' not allowed`), false);
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],

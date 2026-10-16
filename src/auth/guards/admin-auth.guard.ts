@@ -14,36 +14,45 @@ export class AdminAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request & { admin?: { id: string; email: string } }>();
-    const token = this.extractToken(request);
+    const tokens = this.extractTokens(request);
 
-    if (!token) {
+    if (tokens.length === 0) {
       throw new UnauthorizedException('Authentication required to access administrator endpoints.');
     }
 
-    try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
-      request.admin = {
-        id: payload.sub,
-        email: payload.email,
-      };
-      return true;
-    } catch {
-      throw new UnauthorizedException('Invalid or expired authentication session.');
+    for (const token of tokens) {
+      try {
+        const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
+        request.admin = {
+          id: payload.sub,
+          email: payload.email,
+        };
+        return true;
+      } catch {
+        // Continue to next token if available
+      }
     }
+
+    throw new UnauthorizedException('Invalid or expired authentication session.');
   }
 
-  private extractToken(request: Request): string | null {
-    // 1. Prefer HTTP-only cookie
-    if (request.cookies && typeof request.cookies['admin_token'] === 'string') {
-      return request.cookies['admin_token'];
-    }
+  private extractTokens(request: Request): string[] {
+    const tokens: string[] = [];
 
-    // 2. Fallback to Authorization Bearer header
+    // 1. Authorization Bearer header (takes priority if provided)
     const authHeader = request.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      return authHeader.substring(7).trim();
+      const headerToken = authHeader.substring(7).trim();
+      if (headerToken) {
+        tokens.push(headerToken);
+      }
     }
 
-    return null;
+    // 2. HTTP-only cookie
+    if (request.cookies && typeof request.cookies['admin_token'] === 'string') {
+      tokens.push(request.cookies['admin_token']);
+    }
+
+    return tokens;
   }
 }

@@ -40,7 +40,7 @@ export class AuthController {
     response.cookie(ADMIN_COOKIE_NAME, token, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: cookieMaxAge,
       path: '/',
     });
@@ -60,7 +60,7 @@ export class AuthController {
     response.clearCookie(ADMIN_COOKIE_NAME, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/',
     });
 
